@@ -291,7 +291,7 @@ void smallMetexLab::changeDisplayMode()
 
 void smallMetexLab::upDigitalDisplay(double value, QString acdc, QString function, QString unit)
 {
-
+	//comm
 }
 
 void smallMetexLab::upAnalogDisplay(double value, QString acdc, QString function, QString unit)
