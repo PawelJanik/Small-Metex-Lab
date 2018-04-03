@@ -288,3 +288,8 @@ void smallMetexLab::changeDisplayMode()
 		ui->xAxisPlotLabel->setEnabled(true);
 	}
 }
+
+void smallMetexLab::upDigitalDisplay(double value, QString acdc, QString function, QString unit)
+{
+
+}

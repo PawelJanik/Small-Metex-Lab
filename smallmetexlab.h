@@ -45,6 +45,8 @@ private:
 	unsigned int countX;
 	bool isLog;
 
+	void upDigitalDisplay(double value, QString acdc, QString function, QString unit);
+
 public slots:
 	void connectPort();
 	void disconnectPort();
