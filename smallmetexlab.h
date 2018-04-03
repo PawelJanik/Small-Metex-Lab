@@ -47,6 +47,7 @@ private:
 
 	void upDigitalDisplay(double value, QString acdc, QString function, QString unit);
 	void upAnalogDisplay(double value, QString acdc, QString function, QString unit);
+	void upPlotDisplay(double value, QString acdc, QString function, QString unit, QString xAxis);
 
 public slots:
 	void connectPort();
