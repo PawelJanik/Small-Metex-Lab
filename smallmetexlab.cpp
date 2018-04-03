@@ -293,3 +293,8 @@ void smallMetexLab::upDigitalDisplay(double value, QString acdc, QString functio
 {
 
 }
+
+void smallMetexLab::upAnalogDisplay(double value, QString acdc, QString function, QString unit)
+{
+
+}

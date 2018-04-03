@@ -46,6 +46,7 @@ private:
 	bool isLog;
 
 	void upDigitalDisplay(double value, QString acdc, QString function, QString unit);
+	void upAnalogDisplay(double value, QString acdc, QString function, QString unit);
 
 public slots:
 	void connectPort();
