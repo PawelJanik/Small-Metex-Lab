@@ -44,6 +44,9 @@ smallMetexLab::smallMetexLab(QWidget *parent) :
 
 	isLog = false;
 	changeDisplayMode();
+
+	ui->analogLayout->addWidget(analogDisplay);
+	analogDisplay->show();
 }
 
 smallMetexLab::~smallMetexLab()
@@ -138,58 +141,67 @@ void smallMetexLab::changeMode()
 
 void smallMetexLab::analyzeData(QString data)
 {
-	ui->acdcLabel->setText("");
+	QString function;
+	QString acdc;
+	double value;
+	QString unit;
+
 	if(data[0] == 'D' && data[1] == 'C')
 	{
-		ui->acdcLabel->setText("DC");
+		acdc = "DC";
 		if(data.at(12) == 'V')
-			ui->funcionLabel->setText("Voltage");
+			function = "Voltage";
 		else
-			ui->funcionLabel->setText("Current");
+			function = "Current";
 	}
 	else if (data[0] == 'A' && data[1] == 'C')
 	{
-		ui->acdcLabel->setText("AC");
+		acdc = "AC";
 		if(data.at(12) == 'V')
-			ui->funcionLabel->setText("Voltage");
+			function = "Voltage";
 		else
-			ui->funcionLabel->setText("Current");
+			function = "Current";
 	}
 
 	else if(data[0] == 'O' && data[1] == 'H')
-		ui->funcionLabel->setText("Resistance");
+		function = "Resistance";
 	else if(data[0] == 'D' && data[1] == 'I')
-		ui->funcionLabel->setText("Diode test");
+		function = "Diode test";
 	else if(data[0] == 'F' && data[1] == 'R')
-		ui->funcionLabel->setText("Frequency");
+		function = "Frequency";
 	else if(data[0] == 'C' && data[1] == 'A')
-		ui->funcionLabel->setText("Capacity");
+		function = "Capacity";
 	else if(data[0] == 'H' && data[1] == 'F')
-		ui->funcionLabel->setText("Transistor test");
+		function = "Transistor test";
 	else if(data[0] == 'L' && data[1] == 'O')
-		ui->funcionLabel->setText("Logic");
+		function = "Logic";
 	else if(data[0] == 'D' && data[1] == 'B')
-		ui->funcionLabel->setText("Decibel");
+		function = "Decibel";
 	else if(data[0] == 'T' && (data[1] == 'M' || data[1] == 'E'))
-		ui->funcionLabel->setText("Temperature");
+		function = "Temperature";
 
-	QString stringValue = data.at(4);
+	QString stringValue = data.at(3);
+	stringValue.append(data.at(4));
 	stringValue.append(data.at(5));
 	stringValue.append(data.at(6));
 	stringValue.append(data.at(7));
 	if(data.at(8) != QString(" "))
 		stringValue.append(data.at(8));
-	double value = stringValue.toDouble();
-	if(data.at(3) == QString("-"))
-		value = value * (-1);
-	ui->lcdNumber->display(value);
 
+	value = stringValue.toDouble();
 
-	QString unit = data.at(9);
+	unit = data.at(9);
 	unit.append(data.at(10));
 	unit.append(data.at(11));
 	unit.append(data.at(12));
-	ui->unitLable->setText(unit);
+	unit.replace(" ","");
+
+	if(ui->digitalRadioButton->isChecked() == true)
+		upDigitalDisplay(value, acdc, function, unit);
+	else if(ui->analogRadioButton->isChecked() == true)
+		upAnalogDisplay(value, acdc, function, unit);
+	else if(ui->plotRadioButton->isChecked() == true)
+		upPlotDisplay(value, acdc, function, unit);
 
 	if(isLog == true)
 		logToFile(value);
@@ -291,15 +303,39 @@ void smallMetexLab::changeDisplayMode()
 
 void smallMetexLab::upDigitalDisplay(double value, QString acdc, QString function, QString unit)
 {
-
+	ui->acdcLabel->setText(acdc);
+	ui->funcionLabel->setText(function);
+	ui->unitLable->setText(unit);
+	ui->lcdNumber->display(value);
 }
 
 void smallMetexLab::upAnalogDisplay(double value, QString acdc, QString function, QString unit)
 {
-	//comm
+	int rangeMaxTable[] = {2, 10, 20, 50, 100, 200, 500, 1000, 2000};
+	int scaleStepTable[] = {1, 2, 5, 10, 20, 50, 100, 200, 200};
+	int scaleSupStepable[] = {0, 1, 2, 5, 10, 20, 50, 100, 200};
+
+	analogDisplay->setRangeMax(rangeMaxTable[0]);
+
+	for(int i = 0; i < 8; i++)
+	{
+		if(value < rangeMaxTable[i])
+		{
+			analogDisplay->setRangeMax(rangeMaxTable[i]);
+			analogDisplay->setScaleStep(scaleStepTable[i]);
+			analogDisplay->setScaleSupStep(scaleSupStepable[i]);
+			break;
+		}
+	}
+
+	analogDisplay->setValue(value);
+	analogDisplay->setUnit(unit);
+	analogDisplay->setFunction(function);
+	analogDisplay->setAcDc(acdc);
 }
 
-void smallMetexLab::upPlotDisplay(double value, QString acdc, QString function, QString unit, QString xAxis)
+void smallMetexLab::upPlotDisplay(double value, QString acdc, QString function, QString unit)
 {
-
+	//ui->plot->xAxis->setLabel(ui->xAxisPlotComboBox->currentText());
+	//ui->plot->replot();
 }

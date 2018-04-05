@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = smallMetexLab
 TEMPLATE = app
@@ -14,9 +14,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         smallmetexlab.cpp \
-    serialport.cpp
+    serialport.cpp \
+    analogdisplay.cpp \
+    qcustomplot.cpp
 
 HEADERS  += smallmetexlab.h \
-    serialport.h
+    serialport.h \
+    analogdisplay.h \
+    qcustomplot.h
 
 FORMS    += smallmetexlab.ui

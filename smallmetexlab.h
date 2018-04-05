@@ -17,6 +17,7 @@
 #include <fcntl.h>
 
 #include "serialport.h"
+#include "analogdisplay.h"
 
 namespace Ui {
 class smallMetexLab;
@@ -47,7 +48,9 @@ private:
 
 	void upDigitalDisplay(double value, QString acdc, QString function, QString unit);
 	void upAnalogDisplay(double value, QString acdc, QString function, QString unit);
-	void upPlotDisplay(double value, QString acdc, QString function, QString unit, QString xAxis);
+	void upPlotDisplay(double value, QString acdc, QString function, QString unit);
+
+	AnalogDisplay * analogDisplay = new AnalogDisplay;
 
 public slots:
 	void connectPort();
