@@ -30,8 +30,6 @@ private:
 
 	int RTS_flag = TIOCM_RTS;
 	struct termios portSettings;
-
-	//int d;
 };
 
 #endif // SERIALPORT_H

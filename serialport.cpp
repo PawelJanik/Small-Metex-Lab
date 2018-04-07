@@ -1,6 +1,9 @@
 #include "serialport.h"
 #include <sys/time.h>
 
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
 serialPort::serialPort()
 {
 
@@ -27,18 +30,18 @@ void serialPort::connect(std::string portName)
 		tcgetattr(port, &portSettings);
 		cfsetispeed(&portSettings, B1200);
 		cfsetospeed(&portSettings, B1200);
-		portSettings.c_cflag |= (CLOCAL | CREAD);
+
 
 		portSettings.c_cflag &= ~PARENB;
 		portSettings.c_cflag &= ~CSTOPB;
 		portSettings.c_cflag &= ~CSIZE;
 		portSettings.c_cflag |= CS7;
 
-		portSettings.c_lflag &= ~(ICANON | ECHO | ECHOE);
+		portSettings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+
+		portSettings.c_oflag &= ~OPOST;
 
 		tcsetattr(port,TCSANOW,&portSettings);
-
-		//d = 0;
 	}
 }
 
@@ -65,18 +68,18 @@ std::string serialPort::readPort()
 	gettimeofday(&time, NULL);
 	while (c != 10 && c != 13 &&  i < 14)
 	{
-		countChar = read(port,&c,1);
-		if(countChar > 0)
-		{
-			readBuffer[i] = c;
-			i++;
-		}
 
 		gettimeofday(&_time, NULL);
 		if(_time.tv_sec - time.tv_sec > 2)
 		{
 			isConnect = false;
 			break;
+		}
+		countChar = read(port,&c,1);
+		if(countChar > 0)
+		{
+			readBuffer[i] = c;
+			i++;
 		}
 	}
 	std::string stringBuffer(readBuffer,14);

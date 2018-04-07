@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>795</width>
-    <height>891</height>
+    <height>791</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -99,8 +99,32 @@
          <property name="title">
           <string>Plot</string>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="3" column="0">
+           <widget class="QPushButton" name="savePlotButton">
+            <property name="text">
+             <string>Save plot</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="clearPlotButton">
+            <property name="text">
+             <string>Clear</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="startPauzePlotButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Start</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="3">
            <widget class="QCustomPlot" name="plot" native="true"/>
           </item>
          </layout>
@@ -143,26 +167,10 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="xAxisPlotLabel">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>50</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>X-axis :</string>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
            <widget class="QRadioButton" name="plotRadioButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximumSize">
              <size>
@@ -173,29 +181,6 @@
             <property name="text">
              <string>Plo&amp;t</string>
             </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QComboBox" name="xAxisPlotComboBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <item>
-             <property name="text">
-              <string>Measurement number</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Time</string>
-             </property>
-            </item>
            </widget>
           </item>
           <item row="0" column="0" colspan="2">
@@ -237,16 +222,6 @@
            <widget class="QRadioButton" name="manualRadioButton">
             <property name="text">
              <string>Manual</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="transistorTestRadioutton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Trans&amp;istor test</string>
             </property>
            </widget>
           </item>
@@ -499,33 +474,6 @@
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>795</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuPlik">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <addaction name="actionConfiguration"/>
-    <addaction name="separator"/>
-    <addaction name="actionZamknij"/>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
-    <addaction name="actionAbout"/>
-    <addaction name="actionHelp"/>
-   </widget>
-   <addaction name="menuPlik"/>
-   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionZamknij">

@@ -122,6 +122,7 @@ void AnalogDisplay::setScaleSupStep(int supStep)
 
 void AnalogDisplay::setValue(double Value)
 {
+
 	value = Value;
 	this->update();
 }

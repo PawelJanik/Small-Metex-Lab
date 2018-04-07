@@ -31,6 +31,10 @@ smallMetexLab::smallMetexLab(QWidget *parent) :
 	connect(ui->fileLineEdit, SIGNAL(textChanged(QString)), this, SLOT(setFileName()));
 	connect(ui->logPushButton, SIGNAL(clicked()), this, SLOT(onOffLog()));
 
+	connect(ui->savePlotButton, SIGNAL(clicked()), this, SLOT(savePlot()));
+	connect(ui->clearPlotButton, SIGNAL(clicked()), this, SLOT(clearPlot()));
+	connect(ui->startPauzePlotButton, SIGNAL(clicked()), this, SLOT(startPlot()));
+
 	QDir directory("/dev");
 	QStringList portList = directory.entryList(QStringList() << "*ttyS*", QDir::NoDotAndDotDot | QDir::System);
 	portList << directory.entryList(QStringList() << "*ttyUSB*", QDir::NoDotAndDotDot | QDir::System);
@@ -43,14 +47,22 @@ smallMetexLab::smallMetexLab(QWidget *parent) :
 	ui->portBox->addItems(portList);
 
 	isLog = false;
-	changeDisplayMode();
 
 	ui->analogLayout->addWidget(analogDisplay);
 	analogDisplay->show();
+
+	ui->plot->addGraph();
+	isPlotEnable = false;
+	countPlotX = 0;
+	isPlotSave = true;
+
+	changeDisplayMode();
 }
 
 smallMetexLab::~smallMetexLab()
 {
+	if(isPlotSave == false)
+		savePlot();
 	delete ui;
 }
 
@@ -68,6 +80,7 @@ void smallMetexLab::connectPort()
 		connect(ui->connectButton, SIGNAL(clicked()), this, SLOT(disconnectPort()));
 		ui->portBox->setEnabled(false);
 		changeMode();
+		ui->startPauzePlotButton->setEnabled(true);
 	}
 }
 
@@ -81,6 +94,7 @@ void smallMetexLab::disconnectPort()
 	ui->portBox->setEnabled(true);
 	ui->intervalSpinBox->setEnabled(false);
 	ui->manualButton->setEnabled(false);
+	ui->startPauzePlotButton->setEnabled(false);
 	timer->stop();
 }
 
@@ -277,27 +291,25 @@ void smallMetexLab::changeDisplayMode()
 {
 	if(ui->digitalRadioButton->isChecked() == true)
 	{
+		clearPlot();
+
 		ui->digitalDisplayBox->show();
 		ui->analogDisplayBox->hide();
 		ui->plotBox->hide();
-		ui->xAxisPlotComboBox->setEnabled(false);
-		ui->xAxisPlotLabel->setEnabled(false);
 	}
 	else if(ui->analogRadioButton->isChecked() == true)
 	{
+		clearPlot();
+
 		ui->digitalDisplayBox->hide();
 		ui->analogDisplayBox->show();
 		ui->plotBox->hide();
-		ui->xAxisPlotComboBox->setEnabled(false);
-		ui->xAxisPlotLabel->setEnabled(false);
 	}
 	else if(ui->plotRadioButton->isChecked() == true)
 	{
 		ui->digitalDisplayBox->hide();
 		ui->analogDisplayBox->hide();
 		ui->plotBox->show();
-		ui->xAxisPlotComboBox->setEnabled(true);
-		ui->xAxisPlotLabel->setEnabled(true);
 	}
 }
 
@@ -311,6 +323,9 @@ void smallMetexLab::upDigitalDisplay(double value, QString acdc, QString functio
 
 void smallMetexLab::upAnalogDisplay(double value, QString acdc, QString function, QString unit)
 {
+	if(value < 0)
+		value = value * (-1);
+
 	int rangeMaxTable[] = {2, 10, 20, 50, 100, 200, 500, 1000, 2000};
 	int scaleStepTable[] = {1, 2, 5, 10, 20, 50, 100, 200, 200};
 	int scaleSupStepable[] = {0, 1, 2, 5, 10, 20, 50, 100, 200};
@@ -336,6 +351,103 @@ void smallMetexLab::upAnalogDisplay(double value, QString acdc, QString function
 
 void smallMetexLab::upPlotDisplay(double value, QString acdc, QString function, QString unit)
 {
-	//ui->plot->xAxis->setLabel(ui->xAxisPlotComboBox->currentText());
-	//ui->plot->replot();
+	ui->plot->xAxis->setLabel("Count");
+	QString ylabel = function;
+	ylabel.append(" [");
+
+	if(acdc == "AC")
+		ylabel.append("~");
+	else if(acdc == "DC")
+		ylabel.append("-");
+
+	if(unit.isEmpty() == false)
+		ylabel.append(unit + "]");
+
+	if(lastFunction.isEmpty() == false && ylabel != lastFunction)
+	{
+		timer->stop();
+		savePlot();
+		lastFunction.clear();
+		countPlotX = 0;
+		ui->plot->clearGraphs();
+		ui->plot->addGraph();
+		timer->start(ui->intervalSpinBox->value());
+	}
+	lastFunction = ylabel;
+
+	ui->plot->yAxis->setLabel(ylabel);
+	if(isPlotEnable == true)
+	{
+		ui->plot->graph(0)->addData(countPlotX,value);
+		countPlotX++;
+		ui->plot->xAxis->rescale();
+		ui->plot->yAxis->rescale();
+		ui->plot->yAxis->setRangeLower(0);
+		ui->plot->replot();
+		isPlotSave = false;
+		ui->clearPlotButton->setEnabled(true);
+		ui->savePlotButton->setEnabled(true);
+	}
+}
+
+void smallMetexLab::savePlot()
+{
+	QMessageBox msgBox;
+	msgBox.setText("You are change finction on multimetr");
+	msgBox.setInformativeText("Do you want to save plot?");
+	msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+	msgBox.setDefaultButton(QMessageBox::Save);
+	int ret = msgBox.exec();
+
+	if (ret == QMessageBox::Save)
+	{
+		QString fileName("/home/pawel/plot.png");
+
+		fileName = QFileDialog::getSaveFileName(this, tr("Save plot"), "/home/pawel", tr("*.png"));
+
+		QFile file(fileName);
+
+		if (!file.open(QIODevice::WriteOnly))
+			qDebug() << file.errorString();
+		else
+		{
+			ui->plot->savePng(fileName);
+			isPlotSave = true;
+			ui->savePlotButton->setEnabled(false);
+		}
+	}
+}
+
+void smallMetexLab::clearPlot()
+{
+	timer->stop();
+	if(isPlotSave == false)
+		savePlot();
+
+	lastFunction.clear();
+	countPlotX = 0;
+	ui->plot->clearGraphs();
+	ui->plot->addGraph();
+	ui->plot->replot();
+	isPlotSave = true;
+	ui->clearPlotButton->setEnabled(false);
+	ui->savePlotButton->setEnabled(false);
+	ui->plot->replot();
+	timer->start(ui->intervalSpinBox->value());
+}
+
+void smallMetexLab::startPlot()
+{
+	isPlotEnable = true;
+	ui->startPauzePlotButton->setText("Pauze");
+	disconnect(ui->startPauzePlotButton, SIGNAL(clicked()), this, SLOT(startPlot()));
+	connect(ui->startPauzePlotButton, SIGNAL(clicked()), this, SLOT(pauzePlot()));
+}
+
+void smallMetexLab::pauzePlot()
+{
+	isPlotEnable = false;
+	ui->startPauzePlotButton->setText("Start");
+	disconnect(ui->startPauzePlotButton, SIGNAL(clicked()), this, SLOT(pauzePlot()));
+	connect(ui->startPauzePlotButton, SIGNAL(clicked()), this, SLOT(startPlot()));
 }

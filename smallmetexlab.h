@@ -52,6 +52,11 @@ private:
 
 	AnalogDisplay * analogDisplay = new AnalogDisplay;
 
+	unsigned int countPlotX;
+	QString lastFunction;
+	bool isPlotEnable;
+	bool isPlotSave;
+
 public slots:
 	void connectPort();
 	void disconnectPort();
@@ -63,6 +68,10 @@ public slots:
 	void setFileName();
 	void setFileNameByDialog();
 	void onOffLog();
+	void savePlot();
+	void clearPlot();
+	void startPlot();
+	void pauzePlot();
 };
 
 #endif // SMALLMETEXLAB_H
