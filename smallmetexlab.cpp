@@ -14,11 +14,10 @@ smallMetexLab::smallMetexLab(QWidget *parent) :
 {
 	ui->setupUi(this);
 	connect(ui->connectButton, SIGNAL(clicked()), this, SLOT(connectPort()));
-	connect(ui->actionZamknij, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui->intervalSpinBox, SIGNAL(valueChanged(int)), this, SLOT(changeInterval()));
-	connect(ui->manualButton, SIGNAL(clicked()), this, SLOT(getDataManual()));
 
-	connect(timer, SIGNAL(timeout()), this, SLOT(getDataAuto()));
+	connect(ui->manualButton, SIGNAL(clicked()), this, SLOT(getData()));
+	connect(timer, SIGNAL(timeout()), this, SLOT(getData()));
 
 	connect(ui->manualRadioButton, SIGNAL(clicked()), this, SLOT(changeMode()));
 	connect(ui->autoRadioButton, SIGNAL(clicked()), this, SLOT(changeMode()));
@@ -35,16 +34,10 @@ smallMetexLab::smallMetexLab(QWidget *parent) :
 	connect(ui->clearPlotButton, SIGNAL(clicked()), this, SLOT(clearPlot()));
 	connect(ui->startPauzePlotButton, SIGNAL(clicked()), this, SLOT(startPlot()));
 
-	QDir directory("/dev");
-	QStringList portList = directory.entryList(QStringList() << "*ttyS*", QDir::NoDotAndDotDot | QDir::System);
-	portList << directory.entryList(QStringList() << "*ttyUSB*", QDir::NoDotAndDotDot | QDir::System);
+	QList<QSerialPortInfo> portList = portInfo.availablePorts();
 
-	for(int i = 0; i < portList.size(); i++)
-	{
-		portList[i].prepend("/dev/");
-	}
-	//portList.sort();
-	ui->portBox->addItems(portList);
+	for(int i = 0; i < portList.count(); i++)
+	ui->portBox->addItem(portList.at(i).portName());
 
 	isLog = false;
 
@@ -57,6 +50,11 @@ smallMetexLab::smallMetexLab(QWidget *parent) :
 	isPlotSave = true;
 
 	changeDisplayMode();
+
+	port->setBaudRate(QSerialPort::Baud1200);
+	port->setDataBits(QSerialPort::Data7);
+	port->setParity(QSerialPort::NoParity);
+	port->setStopBits(QSerialPort::TwoStop);
 }
 
 smallMetexLab::~smallMetexLab()
@@ -68,25 +66,32 @@ smallMetexLab::~smallMetexLab()
 
 void smallMetexLab::connectPort()
 {
-	port.connect(ui->portBox->currentText().toStdString());
+	port->setPortName(ui->portBox->currentText());
 
-	if(port.isConnect == false)
-		ui->statusBar->showMessage("Connecting falied");
-	else
+	if(port->open(QIODevice::ReadWrite))
 	{
-		ui->statusBar->showMessage("Port is connect");
+		ui->statusBar->showMessage("Port is connected");
 		ui->connectButton->setText("Disconnect");
 		disconnect(ui->connectButton, SIGNAL(clicked()), this, SLOT(connectPort()));
 		connect(ui->connectButton, SIGNAL(clicked()), this, SLOT(disconnectPort()));
 		ui->portBox->setEnabled(false);
 		changeMode();
 		ui->startPauzePlotButton->setEnabled(true);
+		port->setRequestToSend(false);
+		port->pinoutSignals();
+		port->write("D");
 	}
+	else
+		ui->statusBar->showMessage("Unable connect to port");
 }
 
 void smallMetexLab::disconnectPort()
 {
-	port.disconnect();
+	port->clear();
+	port->setRequestToSend(true);
+	port->pinoutSignals();
+	if(port->isOpen())
+		port->close();
 	ui->connectButton->setText("Connect");
 	ui->statusBar->clearMessage();
 	disconnect(ui->connectButton, SIGNAL(clicked()), this, SLOT(disconnectPort()));
@@ -98,41 +103,38 @@ void smallMetexLab::disconnectPort()
 	timer->stop();
 }
 
-void smallMetexLab::getDataAuto()
+void smallMetexLab::getData()
 {
-	timer->stop();
-	if(port.isConnect == true)
+	int ms = QTime::currentTime().msecsSinceStartOfDay();
+	if(port->isOpen())
 	{
-		QString data = QString::fromStdString(port.readPort());
-		timer->start(ui->intervalSpinBox->value());
-		analyzeData(data);
-	}
-	else
-	{
-		disconnectPort();
-		ui->statusBar->showMessage("Check the device");
+		QString data;
+		while(data.length() < 14)
+		{
+			QByteArray d = port->read(1);
+			data.append(QString::fromUtf8(d));
+			if(ms + 2000 < QTime::currentTime().msecsSinceStartOfDay())
+			{
+				disconnectPort();
+				ui->statusBar->showMessage("Check the device");
+				break;
+			}
+		}
+
+		if(port->isOpen())
+		{
+			timer->start(ui->intervalSpinBox->value());
+
+			port->clear();
+			port->write("D");
+			analyzeData(data);
+		}
 	}
 }
 
 void smallMetexLab::changeInterval()
 {
 	timer->setInterval(ui->intervalSpinBox->value());
-}
-
-
-void smallMetexLab::getDataManual()
-{
-	if(port.isConnect == true)
-	{
-		QString data = QString::fromStdString(port.readPort());
-		ui->manualButton->setEnabled(true);
-		analyzeData(data);
-	}
-	else
-	{
-		disconnectPort();
-		ui->statusBar->showMessage("Check the device");
-	}
 }
 
 void smallMetexLab::changeMode()
@@ -204,11 +206,19 @@ void smallMetexLab::analyzeData(QString data)
 
 	value = stringValue.toDouble();
 
-	unit = data.at(9);
-	unit.append(data.at(10));
-	unit.append(data.at(11));
-	unit.append(data.at(12));
-	unit.replace(" ","");
+
+	if(function == "Temperature")
+	{
+		unit = "*C";
+	}
+	else
+	{
+		unit = data.at(9);
+		unit.append(data.at(10));
+		unit.append(data.at(11));
+		unit.append(data.at(12));
+		unit.replace(" ","");
+	}
 
 	if(ui->digitalRadioButton->isChecked() == true)
 		upDigitalDisplay(value, acdc, function, unit);

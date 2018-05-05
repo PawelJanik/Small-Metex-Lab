@@ -14,12 +14,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         smallmetexlab.cpp \
-    serialport.cpp \
     analogdisplay.cpp \
     qcustomplot.cpp
 
 HEADERS  += smallmetexlab.h \
-    serialport.h \
     analogdisplay.h \
     qcustomplot.h
 

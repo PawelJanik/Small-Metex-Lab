@@ -16,7 +16,10 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-#include "serialport.h"
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
+//#include "serialport.h"
 #include "analogdisplay.h"
 
 namespace Ui {
@@ -34,7 +37,10 @@ public:
 private:
 	Ui::smallMetexLab *ui;
 
-	serialPort port;
+	//serialPort port;
+	QSerialPortInfo portInfo;
+	QSerialPort * port = new QSerialPort;
+
 	QTimer *timer = new QTimer(this);
 	int d;
 
@@ -60,9 +66,8 @@ private:
 public slots:
 	void connectPort();
 	void disconnectPort();
-	void getDataAuto();
+	void getData();
 	void changeInterval();
-	void getDataManual();
 	void changeMode();
 	void changeDisplayMode();
 	void setFileName();

@@ -160,7 +160,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Analog</string>
+             <string>A&amp;nalog</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -221,7 +221,7 @@
           <item>
            <widget class="QRadioButton" name="manualRadioButton">
             <property name="text">
-             <string>Manual</string>
+             <string>&amp;Manual</string>
             </property>
            </widget>
           </item>
@@ -476,26 +476,6 @@
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionZamknij">
-   <property name="text">
-    <string>&amp;Close</string>
-   </property>
-  </action>
-  <action name="actionConfiguration">
-   <property name="text">
-    <string>C&amp;onfiguration</string>
-   </property>
-  </action>
-  <action name="actionAbout">
-   <property name="text">
-    <string>&amp;About</string>
-   </property>
-  </action>
-  <action name="actionHelp">
-   <property name="text">
-    <string>&amp;Help</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
