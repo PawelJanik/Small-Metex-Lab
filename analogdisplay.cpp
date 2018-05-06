@@ -75,21 +75,21 @@ void AnalogDisplay::paintEvent(QPaintEvent *)
 		painter.restore();
 	}
 
-	textFont.setPixelSize(35);
+	textFont.setPixelSize(h/8);
 	painter.setFont(textFont);
-	painter.drawText(QPoint(-15, -100),unit);
+	painter.drawText(QPoint(-15, -h/2),unit);
 	int acdcPoint = -10;
 	if(unit == "mA" || unit == "mV")
 		acdcPoint = 0;
 
 	if(acdc == "AC")
-		painter.drawText(QPoint(acdcPoint-5, -70),"~");
+		painter.drawText(QPoint(acdcPoint-5, -(h/2-h/8)),"~");
 	else if(acdc == "DC")
-		painter.drawText(QPoint(acdcPoint, -70),"-");
+		painter.drawText(QPoint(acdcPoint, -(h/2-h/8)),"-");
 
-	textFont.setPixelSize(15);
+	textFont.setPixelSize(h/10);
 	painter.setFont(textFont);
-	painter.drawText(QPoint(-250, -40),function);
+	painter.drawText(QPoint(-width()/2, -40),function);
 
 	painter.setPen(Qt::red);
 	painter.rotate(qreal((100.0/(rangeMax-rangeMin)*value)-50.0));

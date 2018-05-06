@@ -7,15 +7,6 @@
 #include <QDir>
 #include <QStringList>
 
-#include <stdio.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <unistd.h>
-#include <errno.h>
-
-#include <stdlib.h>
-#include <fcntl.h>
-
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
